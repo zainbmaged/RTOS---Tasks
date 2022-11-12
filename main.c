@@ -74,9 +74,10 @@
 /* Constants for the ComTest demo application tasks. */
 #define mainCOM_TEST_BAUD_RATE	( ( unsigned long ) 115200 )
 
-TaskHandle_t Toggle_1000_Handler = NULL;
-TaskHandle_t Toggle_500_Handler = NULL;
+TaskHandle_t Led_Off_Handler = NULL;
+TaskHandle_t Toggle_400_Handler = NULL;
 TaskHandle_t Toggle_100_Handler = NULL;
+TaskHandle_t Button_Handler = NULL;
 
 /*
  * Configure the processor for use with the Keil demo board.  This is very
@@ -86,54 +87,81 @@ TaskHandle_t Toggle_100_Handler = NULL;
 static void prvSetupHardware( void );
 /*-----------------------------------------------------------*/
 
+pinState_t Button_State; //global variable for the button state
+TickType_t start_push; //global variable for the ISR time before starting Button Push 
+TickType_t end_push;//globlal variable for the ISR time after starting Button Push 
+TickType_t time;// the total time of the push which is the diffrence between end_push and start_push
+/* Button pin0 pressing time is calculated and place in global variable time  */
+void Button( void * pvParameters )
+{
+	
+    
+    for( ;; )
+    {
+			 // read Button and save its state in Button_State global variable
+			Button_State = GPIO_read(PORT_0,PIN0);
+			//if button is not pushed save the ISR time
+			if(Button_State == PIN_IS_LOW){
+				start_push = xTaskGetTickCount(  );	
+			}
+			//if button is pushed but not released save ISR time
+			 if(Button_State == PIN_IS_HIGH){
+				 end_push = xTaskGetTickCount(  );
+				 //save the difference
+					time = end_push-start_push;
+				}
+    }
+}
 
 
 /* Task1  created Toggle LED PIN1 each 1 second */
-void Toggle_1000( void * pvParameters )
+void Led_Off( void * pvParameters )
 {
     
     for( ;; )
     {
+			//if time of push less than 2 seconds turn LED off
+			while(time < 2000 && Button_State == PIN_IS_LOW){
+			GPIO_write(PORT_0, PIN1,PIN_IS_LOW);
+				
+			}
+    }
+}
+/* Task2  created Toggle LED PIN1 each 0.5 second */
+void Toggle_400( void * pvParameters )
+{
+    
+    for( ;; )
+    {
+			//if time of push more than 2 seconds and less than 4 seconds toggle with 400ms periodicity
 			
+			while(time > 2000 && time < 4000 && Button_State == PIN_IS_LOW){
 			GPIO_write(PORT_0, PIN1,PIN_IS_HIGH);
 			
-			vTaskDelay( 1000 );
+			vTaskDelay( 400 );
 			
 			GPIO_write(PORT_0, PIN1,PIN_IS_LOW);
 			
-			vTaskDelay( 1000 );
+			vTaskDelay( 400 );
+			}
+			
     }
 }
-/* Task2  created Toggle LED PIN2 each 0.5 second */
-void Toggle_500( void * pvParameters )
-{
-    
-    for( ;; )
-    {
-			
-			GPIO_write(PORT_0, PIN2,PIN_IS_HIGH);
-			
-			vTaskDelay( 500 );
-			
-			GPIO_write(PORT_0, PIN2,PIN_IS_LOW);
-			
-			vTaskDelay( 500);
-    }
-}
-/* Task2  created Toggle LED PIN3 each 0.1 second */
+/* Task2  created Toggle LED PIN1 each 0.1 second */
 void Toggle_100( void * pvParameters )
 {
-    
+    //if time of push more than 4 second toggle with periodicity 100ms
     for( ;; )
     {
-			
-			GPIO_write(PORT_0, PIN3,PIN_IS_HIGH);
-			
-			vTaskDelay( 100 );
-			
-			GPIO_write(PORT_0, PIN3,PIN_IS_LOW);
+			while( time > 4000 && Button_State == PIN_IS_LOW){
+			GPIO_write(PORT_0, PIN1,PIN_IS_HIGH);
 			
 			vTaskDelay( 100 );
+			
+			GPIO_write(PORT_0, PIN1,PIN_IS_LOW);
+			
+			vTaskDelay( 100 );
+			}
     }
 }
 
@@ -151,21 +179,21 @@ int main( void )
 	
 	// Toggle 1 LED each one second 
 			 xTaskCreate(
-                    Toggle_1000,       /* Function that implements the task. */
-                    "Toggle_1000",          /* Text name for the task. */
+                    Led_Off,       /* Function that implements the task. */
+                    "Led_Off",          /* Text name for the task. */
                     100,      /* Stack size in words, not bytes. */
                     ( void * ) 0,    /* Parameter passed into the task. */
                     1,/* Priority at which the task is created. */
-                    &Toggle_1000_Handler );      /* Used to pass out the created task's handle. */
+                    &Led_Off_Handler );      /* Used to pass out the created task's handle. */
 										
   //Toggle LED PIN2 each 0.5 second
 				xTaskCreate(
-                    Toggle_500,       /* Function that implements the task. */
-                    "Toggle_500",          /* Text name for the task. */
+                    Toggle_400,       /* Function that implements the task. */
+                    "Toggle_400",          /* Text name for the task. */
                     100,      /* Stack size in words, not bytes. */
                     ( void * ) 0,    /* Parameter passed into the task. */
                     1,/* Priority at which the task is created. */
-                    &Toggle_500_Handler );      /* Used to pass out the created task's handle. */		
+                    &Toggle_400_Handler );      /* Used to pass out the created task's handle. */		
    //Toggle LED PIN3 each 0.1 second 
 					xTaskCreate(
                     Toggle_100,       /* Function that implements the task. */
@@ -173,7 +201,15 @@ int main( void )
                     100,      /* Stack size in words, not bytes. */
                     ( void * ) 0,    /* Parameter passed into the task. */
                     1,/* Priority at which the task is created. */
-                    &Toggle_100_Handler );      /* Used to pass out the created task's handle. */							
+                    &Toggle_100_Handler );      /* Used to pass out the created task's handle. */		
+//Button pushed task 
+					xTaskCreate(
+                    Button,       /* Function that implements the task. */
+                    "Button",          /* Text name for the task. */
+                    100,      /* Stack size in words, not bytes. */
+                    ( void * ) 0,    /* Parameter passed into the task. */
+                    1,/* Priority at which the task is created. */
+                    &Button_Handler );      /* Used to pass out the created task's handle. */											
 										
 
 
