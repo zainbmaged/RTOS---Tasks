@@ -74,7 +74,9 @@
 /* Constants for the ComTest demo application tasks. */
 #define mainCOM_TEST_BAUD_RATE	( ( unsigned long ) 115200 )
 
-TaskHandle_t Toggle_Handler = NULL;
+TaskHandle_t Toggle_1000_Handler = NULL;
+TaskHandle_t Toggle_500_Handler = NULL;
+TaskHandle_t Toggle_100_Handler = NULL;
 
 /*
  * Configure the processor for use with the Keil demo board.  This is very
@@ -87,7 +89,7 @@ static void prvSetupHardware( void );
 
 
 /* Task1  created Toggle LED PIN1 each 1 second */
-void Toggle( void * pvParameters )
+void Toggle_1000( void * pvParameters )
 {
     
     for( ;; )
@@ -100,6 +102,38 @@ void Toggle( void * pvParameters )
 			GPIO_write(PORT_0, PIN1,PIN_IS_LOW);
 			
 			vTaskDelay( 1000 );
+    }
+}
+/* Task2  created Toggle LED PIN2 each 0.5 second */
+void Toggle_500( void * pvParameters )
+{
+    
+    for( ;; )
+    {
+			
+			GPIO_write(PORT_0, PIN2,PIN_IS_HIGH);
+			
+			vTaskDelay( 500 );
+			
+			GPIO_write(PORT_0, PIN2,PIN_IS_LOW);
+			
+			vTaskDelay( 500);
+    }
+}
+/* Task2  created Toggle LED PIN3 each 0.1 second */
+void Toggle_100( void * pvParameters )
+{
+    
+    for( ;; )
+    {
+			
+			GPIO_write(PORT_0, PIN3,PIN_IS_HIGH);
+			
+			vTaskDelay( 100 );
+			
+			GPIO_write(PORT_0, PIN3,PIN_IS_LOW);
+			
+			vTaskDelay( 100 );
     }
 }
 
@@ -115,17 +149,31 @@ int main( void )
 	
     /* Create Tasks here */
 	
-	// Toggle 1 LED each one second Task is created
+	// Toggle 1 LED each one second 
 			 xTaskCreate(
-                    Toggle,       /* Function that implements the task. */
-                    "Toggle",          /* Text name for the task. */
+                    Toggle_1000,       /* Function that implements the task. */
+                    "Toggle_1000",          /* Text name for the task. */
                     100,      /* Stack size in words, not bytes. */
                     ( void * ) 0,    /* Parameter passed into the task. */
                     1,/* Priority at which the task is created. */
-                    &Toggle_Handler );      /* Used to pass out the created task's handle. */
+                    &Toggle_1000_Handler );      /* Used to pass out the created task's handle. */
 										
-
-										
+  //Toggle LED PIN2 each 0.5 second
+				xTaskCreate(
+                    Toggle_500,       /* Function that implements the task. */
+                    "Toggle_500",          /* Text name for the task. */
+                    100,      /* Stack size in words, not bytes. */
+                    ( void * ) 0,    /* Parameter passed into the task. */
+                    1,/* Priority at which the task is created. */
+                    &Toggle_500_Handler );      /* Used to pass out the created task's handle. */		
+   //Toggle LED PIN3 each 0.1 second 
+					xTaskCreate(
+                    Toggle_100,       /* Function that implements the task. */
+                    "Toggle_100",          /* Text name for the task. */
+                    100,      /* Stack size in words, not bytes. */
+                    ( void * ) 0,    /* Parameter passed into the task. */
+                    1,/* Priority at which the task is created. */
+                    &Toggle_100_Handler );      /* Used to pass out the created task's handle. */							
 										
 
 
