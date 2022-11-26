@@ -121,7 +121,7 @@ void Led_Off( void * pvParameters )
     for( ;; )
     {
 			//if time of push less than 2 seconds turn LED off
-			while(time < 2000 && Button_State == PIN_IS_LOW){
+			if(time < 2000 && Button_State == PIN_IS_LOW){
 			GPIO_write(PORT_0, PIN1,PIN_IS_LOW);
 				
 			}
@@ -135,7 +135,7 @@ void Toggle_400( void * pvParameters )
     {
 			//if time of push more than 2 seconds and less than 4 seconds toggle with 400ms periodicity
 			
-			while(time > 2000 && time < 4000 && Button_State == PIN_IS_LOW){
+			if(time > 2000 && time < 4000 && Button_State == PIN_IS_LOW){
 			GPIO_write(PORT_0, PIN1,PIN_IS_HIGH);
 			
 			vTaskDelay( 400 );
@@ -153,7 +153,7 @@ void Toggle_100( void * pvParameters )
     //if time of push more than 4 second toggle with periodicity 100ms
     for( ;; )
     {
-			while( time > 4000 && Button_State == PIN_IS_LOW){
+			if( time > 4000 && Button_State == PIN_IS_LOW){
 			GPIO_write(PORT_0, PIN1,PIN_IS_HIGH);
 			
 			vTaskDelay( 100 );
@@ -214,7 +214,6 @@ int main( void )
 
 
 	/* Now all the tasks have been started - start the scheduler.
-
 	NOTE : Tasks run in system mode and the scheduler runs in Supervisor mode.
 	The processor MUST be in supervisor mode when vTaskStartScheduler is 
 	called.  The demo applications included in the FreeRTOS.org download switch
@@ -243,5 +242,4 @@ static void prvSetupHardware( void )
 	VPBDIV = mainBUS_CLK_FULL;
 }
 /*-----------------------------------------------------------*/
-
 
