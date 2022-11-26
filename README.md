@@ -5,7 +5,7 @@
 
 ### Task(1)  main1.c
 ### Task(2)  main2.c
-### Task(3)  main.c
+### Task(3)  main.c  // preemption must be enabled
 
 
 
