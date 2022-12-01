@@ -123,7 +123,7 @@ void Led_Off( void * pvParameters )
 			//if time of push less than 2 seconds turn LED off
 			if(time < 2000 && Button_State == PIN_IS_LOW){
 			GPIO_write(PORT_0, PIN1,PIN_IS_LOW);
-				
+			vTaskDelay( 400 );	
 			}
     }
 }
